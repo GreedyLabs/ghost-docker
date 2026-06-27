@@ -24,9 +24,6 @@ services:
     # Do not alter this without updating the Tinybird Sync container as well
     image: ghost:${GHOST_VERSION:-6-alpine}
     restart: always
-    # This is required to import current config when migrating
-    env_file:
-      - .env
     environment:
       NODE_ENV: production
       url: https://${DOMAIN:?DOMAIN environment variable is required}
@@ -41,6 +38,14 @@ services:
       tinybird__workspaceId: ${TINYBIRD_WORKSPACE_ID:-}
       tinybird__tracker__datasource: analytics_events
       tinybird__stats__endpoint: ${TINYBIRD_API_URL:-https://api.tinybird.co}
+      # SMTP/mail — 구 env_file(.env)에서 옮김. 값은 Dockhand stack env에서 주입(git 미커밋)
+      mail__transport: ${mail__transport:-Direct}
+      mail__options__host: ${mail__options__host:-}
+      mail__options__port: ${mail__options__port:-}
+      mail__options__secure: ${mail__options__secure:-}
+      mail__options__auth__user: ${mail__options__auth__user:-}
+      mail__options__auth__pass: ${mail__options__auth__pass:-}
+      mail__from: ${mail__from:-}
     volumes:
       - ${UPLOAD_LOCATION:-./data/ghost}:/var/lib/ghost/content
     depends_on:
@@ -82,7 +87,7 @@ services:
       - ghost_network
 
   traffic-analytics:
-    image: ghost/traffic-analytics:1.0.256@sha256:963f8242e6d1671eec9428e5285e2dc06652328569348a95c4501629c285faef
+    image: ghost/traffic-analytics:1.0.255@sha256:1194d07624316317a69e8159db415cb9e17b5d28bc866fd304d92279223c9474
     restart: always
     expose:
       - "3000"
@@ -205,3 +210,4 @@ volumes:
 
 networks:
   ghost_network:
+    name: ghost_network
